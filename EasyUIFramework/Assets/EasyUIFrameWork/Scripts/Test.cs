@@ -30,3 +30,13 @@ public class Test : MonoBehaviour {
     }
 }
 
+/// <summary>
+/// 用于测试单例模板
+/// </summary>
+public class TestSingleton : ISingleton<TestSingleton>
+{
+    public void DoDebug()
+    {
+        Debug.Log("这是单例模式的测试");
+    }
+}
