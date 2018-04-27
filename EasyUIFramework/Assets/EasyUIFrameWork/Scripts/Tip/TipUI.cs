@@ -52,7 +52,11 @@ public class TipUI : BaseUI {
     /// <param name="objs"></param>
     private void OnTipShow (params object[] objs)
     {
-
-        Debug.Log("触发了事件 OnTipShow");
+        string info = "测试事件系统";
+        if (null != objs)
+        {
+            info = objs[0] as string;
+        }
+        Debug.Log(info);
     }
 }

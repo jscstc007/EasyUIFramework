@@ -12,22 +12,7 @@ public enum EventType
     ShowTipUI,
 }
 
-public class EventManager {
-
-    #region 单例模式
-    private static EventManager instance;
-    public static EventManager Instance
-    {
-        get
-        {
-            if (null == instance)
-            {
-                instance = new EventManager();
-            }
-            return instance;
-        }
-    }
-    #endregion
+public class EventManager : ISingleton<EventManager>{
 
     private Dictionary<EventType, UIDelegate> UIDelegateDic = new Dictionary<EventType, UIDelegate>();
 
