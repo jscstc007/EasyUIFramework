@@ -69,19 +69,114 @@ public class ResourceManager : MonoBehaviour {
 
     #region Assetbundle加载
 
-    private AssetBundleManifest assetBundleManifest;
+    private static string AssetbundleLoadPath = Application.streamingAssetsPath;
+
+    private AssetBundleManifest assetbundleManifest;
+    private AssetBundleManifest AssetbundleManifest
+    {
+        get
+        {
+            if (null == assetbundleManifest)
+            {
+                AssetBundle ab = AssetBundle.LoadFromFile(string.Format("{0}/{1}", AssetbundleLoadPath, "StreamingAssets"));
+                assetbundleManifest = ab.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+            }
+            return assetbundleManifest;
+        }
+    }
 
     /// <summary>
-    /// 同步加载Assetbundle文件(待补充)
+    /// 当前已经加载过的ab资源
+    /// </summary>
+    private Dictionary<string, AssetBundle> LoadedAssetbundles = new Dictionary<string, AssetBundle>();
+
+    /// <summary>
+    /// 加载Assetbundle文件(同步)
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="name"></param>
     /// <returns></returns>
-    public T LoadFromAssetbundle<T>(string name) where T : UnityEngine.Object
+    public AssetBundle LoadAssetbundle(string assetbundle)
     {
-        //TODO
-        T t = null;
+       
+        AssetBundle ab = null;
+        if (LoadedAssetbundles.ContainsKey(assetbundle))
+        {
+            ab = LoadedAssetbundles[assetbundle];
+        }
+        else
+        {
+            //先加载引用项
+            string[] dependencies = AssetbundleManifest.GetAllDependencies(assetbundle);
 
+            for (int i = 0; i < dependencies.Length; i++)
+            {
+                string dependence = dependencies[i];
+                Debug.Log("dependence:" + dependence[i]);
+
+                if (LoadedAssetbundles.ContainsKey(dependence))
+                {
+                    //已经加载过 则不用再加载了
+                }
+                else
+                {
+                    //加载引用项
+                    AssetBundle dependenceAssetbundle = AssetBundle.LoadFromFile(dependence);
+                    //添加进已加载列表中
+                    LoadedAssetbundles.Add(dependence, dependenceAssetbundle);
+                }
+            }
+            //加载实际项
+            ab = AssetBundle.LoadFromFile(GetAssetbundlePath(assetbundle));
+
+            //添加进已加载列表中
+            LoadedAssetbundles.Add(assetbundle, ab);
+        }
+        return ab;
+    }
+
+    /// <summary>
+    /// 获得assetbundle真实路径
+    /// </summary>
+    /// <param name="asset"></param>
+    /// <returns></returns>
+    private string GetAssetbundlePath (string asset)
+    {
+        return string.Format("{0}/{1}", AssetbundleLoadPath, asset);
+    }
+
+    /// <summary>
+    /// 加载Assetbundle,加载asset(同步)
+    /// </summary>
+    public T LoadFromAssetbundle<T>(string asset) where T : UnityEngine.Object
+    {
+        T t = null;
+        AssetBundle ab = LoadAssetbundle(asset);
+        if (null != ab)
+        {
+            t = ab.LoadAsset<T>(asset);
+        }
+
+        return t;
+    }
+
+
+    /// <summary>
+    /// 加载Assetbundle,加载asset并生成一个资源(同步)
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="assetbundle"></param>
+    /// <returns></returns>
+    public T LoadAndCreateFromAssetbundle<T>(string asset) where T : UnityEngine.Object
+    {
+        T t = null;
+        T origin = LoadFromAssetbundle<T>(asset);
+
+        if (origin != null)
+        {
+            t = Instantiate<T>(origin);
+        }
+        
         return t;
     }
 
