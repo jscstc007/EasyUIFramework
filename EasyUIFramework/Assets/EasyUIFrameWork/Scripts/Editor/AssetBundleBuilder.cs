@@ -30,7 +30,6 @@ public class AssetBundleBuilder : Editor {
             Debug.Log(string.Format(" {0}/{1} -- {2} {3}", i + 1, count, files[i], resName));
 
             //尝试添加进build
-
             abb.assetBundleName = resName;
             abb.assetNames = new string[] { files[i] };
             builds[i] = abb;

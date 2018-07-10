@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 基础UI类 所有UI模块需继承该类
+/// </summary>
 public abstract class BaseUI : MonoBehaviour {
 
     private GameObject cacheGo;
@@ -82,7 +85,7 @@ public abstract class BaseUI : MonoBehaviour {
     {
         //Write Your Code ...
 
-        //Debug.Log("BaseUI OnAwake");
+        //建议在这里处理UI的位置关系
     }
 
     /// <summary>
@@ -92,7 +95,7 @@ public abstract class BaseUI : MonoBehaviour {
     {
         //Write Your Code ...
 
-        //Debug.Log("BaseUI SetUI");
+        //建议在这里处理数据初始化
     }
 
     void Start()
@@ -107,7 +110,7 @@ public abstract class BaseUI : MonoBehaviour {
     {
         //Write Your Code ...
 
-        //Debug.Log("BaseUI OnStart");
+        //建议在这里处理UI初始化
     }
 
     
@@ -123,6 +126,6 @@ public abstract class BaseUI : MonoBehaviour {
     {
         //Write Your Code ...
 
-        //Debug.Log("BaseUI OnRelease");
+        //这里释放资源
     }
 }

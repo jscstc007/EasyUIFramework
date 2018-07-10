@@ -3,7 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class BaseUIManager : MonoBehaviour{
+/// <summary>
+/// UI管理器(同一资源不能同时进行同步/异步操作)
+/// </summary>
+public class BaseUIManager : MonoBehaviour
+{
 
     #region 单例模式
     private static BaseUIManager instance;
@@ -21,137 +25,78 @@ public class BaseUIManager : MonoBehaviour{
     }
     #endregion
 
-    /// <summary>
-    /// 当前资源目录是否位于Resources下
-    /// </summary>
-    public static bool IsUseResource = true;
+    private void Awake()
+    {
+        LoadedUI = new Dictionary<UIType, BaseUI>();
+    }
 
     /// <summary>
     /// 当前展示的UI
     /// </summary>
-    private Dictionary<UIType, BaseUI> UIDic = new Dictionary<UIType, BaseUI>();
+    private Dictionary<UIType, BaseUI> LoadedUI;
 
     /// <summary>
-    /// 正在加载的UI
+    /// 正在加载的UI(仅异步加载时有效,目前暂不支持)
     /// </summary>
-    private List<UIType> loadingUIList = new List<UIType>();
+    private List<UIType> LoadingUI;//Not Support Now
+
+    #region 同步加载
 
     /// <summary>
-    /// 打开一个UI(异步加载)
+    /// 同步加载一个UI
     /// </summary>
-    /// <param name="uIType"></param>
-    public void OpenUI (UIType uIType,Action<BaseUI> action,params object[] objs)
+    public void OpenUI(UIType type,bool loadFromResources = true, params object[] obj)
     {
-        //如果该UI正在展示 不作处理
-        if (UIDic.ContainsKey(uIType))
+        //未展示时才会处理
+        if (!LoadedUI.ContainsKey(type))
         {
-            //Do Nothing
-        }
-        //否则 如果该UI正在被加载中 不作处理
-        else if (loadingUIList.Contains(uIType))
-        {
-            //Do Nothing
-        }
-        //否则 准备加载该UI
-        else
-        {
-            //在Resource目录下获取资源
-            if (IsUseResource)
+            string uiPath = loadFromResources ? BaseUIDefine.GetUIPathByUIType(type) : BaseUIDefine.GetUIPathByUIType_Assetbundle(type);
+
+            GameObject prefab = loadFromResources ? ResourceManager.Instance.LoadFromResource<GameObject>(uiPath) : ResourceManager.Instance.LoadFromAssetbundle<GameObject>(uiPath);
+            if (null == prefab)
             {
-                StartCoroutine(IE_OpenUI_Resources(uIType, action, objs));
+                Debug.LogError(string.Format("OpenUI ({0}:{1}) error, not exist", type, uiPath));
+                return;
             }
-            //通过Assetbundle获取资源
+
+            //生成UI
+            GameObject go = Instantiate(prefab);
+
+            Type uiType = BaseUIDefine.GetBaseUIByUIType(type);
+            BaseUI baseUI = null;
+            if (null == go.GetComponent(uiType))
+            {
+                baseUI = go.AddComponent(uiType) as BaseUI;
+            }
             else
             {
-                //TODO
+                baseUI = go.GetComponent(uiType) as BaseUI;
             }
-        }
-    }
+            //Set UI Params
+            baseUI.SetUI(obj);
 
-    /// <summary>
-    /// 异步加载Resources下的UI预设体
-    /// </summary>
-    /// <param name="path"></param>
-    /// <param name="action"></param>
-    /// <returns></returns>
-    private IEnumerator IE_OpenUI_Resources(UIType uIType, Action<BaseUI> action, params object[] objs)
-    {
-        string path = GetUIPathByUIType(uIType);
-        ResourceRequest rr = Resources.LoadAsync<GameObject>(path);
-        yield return rr;
-        if (rr.isDone)
+            //添加进Dic中
+            LoadedUI.Add(type, baseUI);
+        }
+        else
         {
-            GameObject prefab = rr.asset as GameObject;
-            //Init and create Gameobject
-            GameObject go = Instantiate(prefab);
-            BaseUI ui = go.GetComponent<BaseUI>();
-            if (null == ui)
-            {
-                Type type = GetBaseUIByUIType(uIType);
-                ui = go.AddComponent(type) as BaseUI;
-            }
-            if (null != objs)
-            {
-                ui.SetUI(objs);
-            }
-            if (null != action)
-            {
-                action.Invoke(ui);
-            }
+            Util.LogError(string.Format("UI({0})已经在展示中了", type));
         }
     }
 
-    /// <summary>
-    /// 异步加载Assetbundle的UI预设体(默认位于streamingassets目录下,可手动调整至persist目录)
-    /// </summary>
-    /// <param name="path"></param>
-    /// <param name="action"></param>
-    /// <returns></returns>
-    private IEnumerator IE_OpenUI_Assetbundle(Action<BaseUI> action)
-    {
-        //TODO
-        yield return null;
-    }
+    #endregion
 
     /// <summary>
-    /// 根据UIType获取UIPath(用于Resources加载)
+    /// 关闭一个UI
     /// </summary>
-    /// <param name="uIType"></param>
-    /// <returns></returns>
-    private string GetUIPathByUIType (UIType uIType)
+    public void CloseUI(UIType type)
     {
-        string path = string.Empty;
-        switch (uIType) {
-            case UIType.Tutorial:
-                path = "UIPrefab/Tutorial/TutorialUI";
-                break;
-            case UIType.Tip:
-                path = "UIPrefab/Tip/TipUI";
-                break;
-            default:
-                break;
-        }
-        return path;
-    }
-
-    /// <summary>
-    /// 根据UIType获取BaseUI
-    /// </summary>
-    /// <param name="uIType"></param>
-    /// <returns></returns>
-    private Type GetBaseUIByUIType (UIType uIType)
-    {
-        switch (uIType)
+        if (LoadedUI.ContainsKey(type))
         {
-            case UIType.Tutorial:
-                return typeof(TutorialUI);
-            case UIType.Tip:
-                return typeof(TipUI);
-            default:
-                break;
+            //删除UI
+            Destroy(LoadedUI[type].CacheGo);
+            //移除dic
+            LoadedUI.Remove(type);
         }
-        return null;
     }
-
-    
 }

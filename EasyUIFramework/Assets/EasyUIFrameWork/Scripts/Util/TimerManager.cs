@@ -63,10 +63,6 @@ public class TimerManager : MonoBehaviour {
     /// <summary>
     /// 注册一个计时器,如果已有同名计时器则无效
     /// </summary>
-    /// <param name="uid"></param>
-    /// <param name="time"></param>
-    /// <param name="action"></param>
-    /// <param name="objs"></param>
     public void RegistTimer (string uid,float time,Action<object[]> action,object[] objs = null)
     {
         if (!TimerDic.ContainsKey(uid))

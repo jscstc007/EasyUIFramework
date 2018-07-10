@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 提供UI的基本架构
+/// </summary>
 public class UIRoot : MonoBehaviour {
 
     #region 单例模式
@@ -12,7 +15,8 @@ public class UIRoot : MonoBehaviour {
         {
             if (null == instance)
             {
-                GameObject prefab = Resources.Load<GameObject>("UIPrefab/UIRoot");
+                //直接Resources加载就可以了
+                GameObject prefab = ResourceManager.Instance.LoadFromResource<GameObject>("UI/UIRoot");
                 GameObject go = Instantiate(prefab);
                 instance = go.GetComponent<UIRoot>();
                 if (null == instance)

@@ -1,0 +1,10 @@
+ManifestFileVersion: 0
+CRC: 636130937
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: uiroot
+      Dependencies: {}
+    Info_1:
+      Name: tutorialui
+      Dependencies: {}

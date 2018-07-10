@@ -1,8 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class TutorialUI : BaseUI {
+
+    #region UI Base
 
     public override UIType GetUIType()
     {
@@ -13,29 +16,32 @@ public class TutorialUI : BaseUI {
     {
         base.OnAwake();
 
-        InitUIRect( UIRoot.Instance.StaticRoot );
+        //处理位置关系
+        InitUIRect(UIRoot.Instance.DynamicRoot);
 
-        //Write your code here...
-    }
-
-    public override void SetUI(params object[] objs)
-    {
-        base.SetUI(objs);
-
-        //Write your code here...
+        Util.Log(string.Format("OnAwake : {0}", GetUIType()));
     }
 
     public override void OnStart()
     {
         base.OnStart();
 
-        //Write your code here...
+        Util.Log(string.Format("OnStart : {0}", GetUIType()));
+    }
+
+    public override void SetUI(params object[] objs)
+    {
+        base.SetUI(objs);
+
+        Util.Log(string.Format("SetUI : {0}", GetUIType()));
     }
 
     public override void OnRelease()
     {
         base.OnRelease();
 
-        //Write your code here...
+        Util.Log(string.Format("OnRelease : {0}", GetUIType()));
     }
+
+    #endregion
 }

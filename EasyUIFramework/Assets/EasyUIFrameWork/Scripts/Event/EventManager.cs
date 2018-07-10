@@ -9,7 +9,6 @@ public enum EventType
     None = -1,
 
     ShowTutorialUI,
-    ShowTipUI,
 }
 
 public class EventManager : ISingleton<EventManager>{
